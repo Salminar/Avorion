@@ -3,30 +3,33 @@ package.path = package.path .. ";data/scripts/lib/?.lua"
 require("utility")
 require("stringutility")
 
+MAXTRANSFER = 999
+
 local playerTotalCrewBar;
 local selfTotalCrewBar;
 
 local playerCrewBars = {}
 local playerCrewButtons = {}
+local playerCrewNumberFields = {}
+
 local selfCrewBars = {}
 local selfCrewButtons = {}
+local selfCrewNumberFields = {}
 
 local playerTotalCargoBar;
 local selfTotalCargoBar;
 
 local playerCargoBars = {}
 local playerCargoButtons = {}
+local playerCargoNumberFields = {}
+
 local selfCargoBars = {}
 local selfCargoButtons = {}
-
-
+local selfCargoNumberFields = {}
 local playerTotalFighterBar;
 local selfTotalFighterBar;
-
-
 local crewmenByButton = {}
 local cargosByButton = {}
-
 
 -- if this function returns false, the script will not be listed in the interaction window,
 -- even though its UI may be registered
@@ -64,9 +67,9 @@ function initUI()
 
     local menu = ScriptUI()
     local window = menu:createWindow(Rect(res * 0.5 - size * 0.5, res * 0.5 + size * 0.5));
-    menu:registerWindow(window, "Transfer Crew/Cargo/Fighters"%_t);
+    menu:registerWindow(window, "Transfer Crew/Cargo"%_t);
 
-    window.caption = "Transfer Crew, Cargo and Fighters"%_t
+    window.caption = "Transfer Crew and Cargo"%_t
     window.showCloseButton = 1
     window.moveable = 1
 
@@ -101,34 +104,38 @@ function initUI()
         local vsplit2 = UIVerticalSplitter(vsplit.right, 3, 0, 0.5)
 
         local button = leftFrame:createButton(vsplit2.right, ">", "onPlayerTransferCrewPressed")
-        local button2 = leftFrame:createButton(vsplit2.left, ">>", "onPlayerTransferCrewPressedx")
+        local numberTextBox = leftFrame:createTextBox(vsplit2.left, "onNumberfieldEntered")
+        numberTextBox.text = "1"
+        numberTextBox.allowedCharacters = "0123456789"
+        numberTextBox.clearOnClick = 1
         local bar = leftFrame:createStatisticsBar(vsplit.left, ColorRGB(1, 1, 1))
         button.textSize = 12
-        button2.textSize = 12
 
         table.insert(playerCrewButtons, button)
-        table.insert(playerCrewButtons, button2)
         table.insert(playerCrewBars, bar)
+        table.insert(playerCrewNumberFields, numberTextBox)
         crewmenByButton[button.index] = i
-        crewmenByButton[button2.index] = i
 
 
         local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 25))
-        local vsplit = UIVerticalSplitter(rect, 10, 0, 0.20)
+        local vsplit = UIVerticalSplitter(rect, 7, 0, 0.20)
         local vsplit2 = UIVerticalSplitter(vsplit.left, 3, 0, 0.5)
-
+        
         local button = rightFrame:createButton(vsplit2.left, "<", "onSelfTransferCrewPressed")
-        local button2 = rightFrame:createButton(vsplit2.right, "<<", "onSelfTransferCrewPressedx")
+        local numberTextBox = rightFrame:createTextBox(vsplit2.right, "onNumberfieldEntered")
+        numberTextBox.text = "1"
+        numberTextBox.allowedCharacters = "0123456789"
+        numberTextBox.clearOnClick = 1
         local bar = rightFrame:createStatisticsBar(vsplit.right, ColorRGB(1, 1, 1))
         button.textSize = 12
-        button2.textSize = 12
+
+
 
 
         table.insert(selfCrewButtons, button)
-        table.insert(selfCrewButtons, button2)
         table.insert(selfCrewBars, bar)
+        table.insert(selfCrewNumberFields, numberTextBox)
         crewmenByButton[button.index] = i
-        crewmenByButton[button2.index] = i
 
     end
 
@@ -152,25 +159,29 @@ function initUI()
 
     selfTotalCargoBar = rightFrame:createNumbersBar(Rect())
     rightLister:placeElementCenter(selfTotalCargoBar)
-
-    for i = 1, 20 do
+    
+    
+    
+    for i = 1, 30 do
 
         local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 25))
-        local vsplit = UIVerticalSplitter(rect, 10, 0, 0.80)
+        local vsplit = UIVerticalSplitter(rect, 7, 0, 0.80)
         local vsplit2 = UIVerticalSplitter(vsplit.right, 3, 0, 0.5)
-
-
+    
         local button = leftFrame:createButton(vsplit2.right, ">", "onPlayerTransferCargoPressed")
-        local button2 = leftFrame:createButton(vsplit2.left, ">>", "onPlayerTransferCargoPressedx")
+        local numberTextBox = leftFrame:createTextBox(vsplit2.left, "onNumberfieldEntered")
+        numberTextBox.text = "1"
+        numberTextBox.allowedCharacters = "0123456789"
+        numberTextBox.clearOnClick = 1
+        
         local bar = leftFrame:createStatisticsBar(vsplit.left, ColorInt(0xa0a0a0))
         button.textSize = 12
-        button2.textSize = 12
+
 
         table.insert(playerCargoButtons, button)
-        table.insert(playerCargoButtons, button2)
         table.insert(playerCargoBars, bar)
+        table.insert(playerCargoNumberFields, numberTextBox)
         cargosByButton[button.index] = i
-        cargosByButton[button2.index] = i
 
 
         local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 25))
@@ -179,16 +190,18 @@ function initUI()
 
 
         local button = rightFrame:createButton(vsplit2.left, "<", "onSelfTransferCargoPressed")
-        local button2 = rightFrame:createButton(vsplit2.right, "<<", "onSelfTransferCargoPressedx")
+        local numberTextBox = rightFrame:createTextBox(vsplit2.right, "onNumberfieldEntered")
+        numberTextBox.text = "1"
+        numberTextBox.allowedCharacters = "0123456789"
+        numberTextBox.clearOnClick = 1
+        
         local bar = rightFrame:createStatisticsBar(vsplit.right, ColorInt(0xa0a0a0))
         button.textSize = 12
-        button2.textSize = 12
 
         table.insert(selfCargoButtons, button)
-        table.insert(selfCargoButtons, button2)
         table.insert(selfCargoBars, bar)
+        table.insert(selfCargoNumberFields, numberTextBox)
         cargosByButton[button.index] = i
-        cargosByButton[button2.index] = i
 
     end
 
@@ -277,6 +290,8 @@ function updateData()
     for _, button in pairs(selfCrewButtons) do button.visible = false end
     for _, button in pairs(playerCargoButtons) do button.visible = false end
     for _, button in pairs(selfCargoButtons) do button.visible = false end
+    for _, nField in pairs(playerCrewNumberFields) do nField.visible = false end
+    for _, nField in pairs(selfCrewNumberFields) do nField.visible = false end
 
     local i = 1
     for _, p in pairs(getSortedCrewmen(playerShip)) do
@@ -284,7 +299,7 @@ function updateData()
         local crewman = p.crewman
         local num = p.num
 
-        local caption = num .. " " .. crewman.profession.name
+        local caption = num .. " " .. crewman.profession.name .. " lv " .. crewman.level
 
         playerTotalCrewBar:addEntry(num, caption, crewman.profession.color)
 
@@ -295,10 +310,22 @@ function updateData()
         singleBar.name = caption
         singleBar.color = crewman.profession.color
 
-        local button = playerCrewButtons[i*2-1]
+        local button = playerCrewButtons[i]
         button.visible = true
-        local button = playerCrewButtons[i*2]
-        button.visible = true
+        
+        local numField = playerCrewNumberFields[i]
+        local nFAmount = numField.text
+        if nFAmount == "" then
+            nFAmount = 0
+        else
+            nFAmount = tonumber(nFAmount)
+            if nFAmount >MAXTRANSFER then
+                numField.text = tostring(MAXTRANSFER)
+            end
+        end
+        
+        numField.visible = true
+
         i = i + 1
     end
 
@@ -308,7 +335,7 @@ function updateData()
         local crewman = p.crewman
         local num = p.num
 
-        local caption = num .. " " .. crewman.profession.name
+        local caption = num .. " " .. crewman.profession.name .. " lv " .. crewman.level
 
         selfTotalCrewBar:addEntry(num, caption, crewman.profession.color)
 
@@ -319,10 +346,22 @@ function updateData()
         singleBar.name = caption
         singleBar.color = crewman.profession.color
 
-        local button = selfCrewButtons[i*2-1]
+        local button = selfCrewButtons[i]
         button.visible = true
-        local button = selfCrewButtons[i*2]
-        button.visible = true
+        
+        local numField = selfCrewNumberFields[i]
+        local nFAmount = numField.text
+        if nFAmount == "" then
+            nFAmount = 0
+        else
+            nFAmount = tonumber(nFAmount)
+            if nFAmount >MAXTRANSFER then
+                numField.text = tostring(MAXTRANSFER)
+            end
+        end
+        
+        numField.visible = true
+        
         i = i + 1
     end
 
@@ -339,18 +378,26 @@ function updateData()
     for i, v in pairs(playerCargoBars) do
 
         local bar = playerCargoBars[i]
-        local button = playerCargoButtons[i*2-1]
-        local button2 = playerCargoButtons[i*2]
-
+        local button = playerCargoButtons[i]
+        local numField = playerCargoNumberFields[i]
         if i > playerShip.numCargos then
             bar:hide();
             button:hide();
-            button2:hide();
+            numField:hide();
         else
             bar:show();
             button:show();
-            button2:show();
-
+            numField:show();
+            local nFAmount =  numField.text
+            if nFAmount == "" then
+                nFAmount = 0
+            else
+                nFAmount = tonumber(nFAmount)
+                if nFAmount >MAXTRANSFER then
+                    numField.text = tostring(MAXTRANSFER)
+                end
+            end
+            
             local good, amount = playerShip:getCargo(i - 1)
             local maxSpace = playerShip.maxCargoSpace
             bar:setRange(0, maxSpace)
@@ -366,17 +413,26 @@ function updateData()
         end
 
         local bar = selfCargoBars[i]
-        local button = selfCargoButtons[i*2-1]
-        local button2 = selfCargoButtons[i*2]
+        local button = selfCargoButtons[i]
+        local numField = selfCargoNumberFields[i]
 
         if i > ship.numCargos then
             bar:hide();
             button:hide();
-            button2:hide();
+            numField:hide();
         else
             bar:show();
             button:show();
-            button2:show();
+            numField:show();
+            local nFAmount =  numField.text
+            if nFAmount == "" then
+                nFAmount = 0
+            else
+                nFAmount = tonumber(nFAmount)
+                if nFAmount >MAXTRANSFER then
+                    numField.text = tostring(MAXTRANSFER)
+                end
+            end
 
             local good, amount = ship:getCargo(i - 1)
             local maxSpace = ship.maxCargoSpace
@@ -400,9 +456,23 @@ function onPlayerTransferCrewPressed(button)
 
     -- check which crew member type
     local crewmanIndex = crewmenByButton[button.index]
+    local amount = playerCrewNumberFields[crewmanIndex].text
+    if amount == "" then
+        amount = 0
+    else
+        amount = tonumber(amount)
+        if amount >MAXTRANSFER then
+            playerCrewNumberFields[crewmanIndex].text = tostring(MAXTRANSFER)
+            amount = MAXTRANSFER
+        end
+    end
+    
+    
+    
     if not crewmanIndex then return end
-
-    invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, false)
+    for i=1, amount do
+        invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, false)
+    end
 end
 
 function onSelfTransferCrewPressed(button)
@@ -410,33 +480,26 @@ function onSelfTransferCrewPressed(button)
 
     -- check which crew member type
     local crewmanIndex = crewmenByButton[button.index]
+    local amount = selfCrewNumberFields[crewmanIndex].text
+    if amount == "" then
+        amount = 0
+    else
+        amount = tonumber(amount)
+        if amount >MAXTRANSFER then
+            selfCrewNumberFields[crewmanIndex].text = tostring(MAXTRANSFER)
+            amount = MAXTRANSFER
+        end
+    end
+    
     if not crewmanIndex then return end
-
-    invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, true)
-end
-
-function onPlayerTransferCrewPressedx(button)
-    -- transfer crew from player ship to self
-
-    -- check which crew member type
-    local crewmanIndex = crewmenByButton[button.index]
-    if not crewmanIndex then return end
-
-    for i = 1, 10 do
-      invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, false)
+    for i=1, amount do
+        invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, true)
     end
 end
 
-function onSelfTransferCrewPressedx(button)
-    -- transfer crew from self ship to player ship
+function onNumberfieldEntered()
 
-    -- check which crew member type
-    local crewmanIndex = crewmenByButton[button.index]
-    if not crewmanIndex then return end
 
-    for i = 1, 10 do
-      invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, true)
-    end
 end
 
 function transferCrew(crewmanIndex, otherIndex, selfToOther)
@@ -489,46 +552,47 @@ function transferCrew(crewmanIndex, otherIndex, selfToOther)
 end
 
 function onPlayerTransferCargoPressed(button)
+    local cargo = cargosByButton[button.index]
     -- transfer cargo from player ship to self
+    local amount = playerCargoNumberFields[cargo].text
+    if amount == "" then
+        amount = 0
+    else
+        amount = tonumber(amount)
+        if amount >MAXTRANSFER then
+            playerCargoNumberFields[cargo].text = tostring(MAXTRANSFER)
+            amount = MAXTRANSFER
+        end
+    end
 
     -- check which cargo
-    local cargo = cargosByButton[button.index]
+    
     if cargo == nil then return end
-
-    invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, false)
-end
-
-function onSelfTransferCargoPressed(button)
-    -- transfer cargo from self to player ship
-
-    -- check which cargo
-    local cargo = cargosByButton[button.index]
-    if cargo == nil then return end
-
-    invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, true)
-end
-
-function onPlayerTransferCargoPressedx(button)
-    -- transfer cargo from player ship to self
-
-    -- check which cargo
-    local cargo = cargosByButton[button.index]
-    if cargo == nil then return end
-
-    for i = 1, 10 do
-      invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, false)
+    for i=1, amount do
+        invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, false)
     end
 end
 
-function onSelfTransferCargoPressedx(button)
+function onSelfTransferCargoPressed(button)
+    local cargo = cargosByButton[button.index]
     -- transfer cargo from self to player ship
+    local amount = selfCargoNumberFields[cargo].text
+    if amount == "" then
+        amount = 0
+    else
+        amount = tonumber(amount)
+        if amount >MAXTRANSFER then
+            selfCargoNumberFields[cargo].text = tostring(MAXTRANSFER)
+            amount = MAXTRANSFER
+        end
+    end
+
 
     -- check which cargo
-    local cargo = cargosByButton[button.index]
+    
     if cargo == nil then return end
-
-    for i = 1, 10 do
-      invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, true)
+    for i=1, amount do
+        invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, true)
     end
 end
 
