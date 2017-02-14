@@ -11,10 +11,12 @@ local selfTotalCrewBar;
 local playerCrewBars = {}
 local playerCrewButtons = {}
 local playerCrewNumberFields = {}
+local playerCrewIcon = {}
 
 local selfCrewBars = {}
 local selfCrewButtons = {}
 local selfCrewNumberFields = {}
+local selfCrewIcon = {}
 
 local playerTotalCargoBar;
 local selfTotalCargoBar;
@@ -22,12 +24,16 @@ local selfTotalCargoBar;
 local playerCargoBars = {}
 local playerCargoButtons = {}
 local playerCargoNumberFields = {}
+local playerCargoIcon = {}
 
 local selfCargoBars = {}
 local selfCargoButtons = {}
 local selfCargoNumberFields = {}
+local selfCargoIcon = {}
+
 local playerTotalFighterBar;
 local selfTotalFighterBar;
+
 local crewmenByButton = {}
 local cargosByButton = {}
 
@@ -66,10 +72,10 @@ function initUI()
     local size = vec2(700, 600)
 
     local menu = ScriptUI()
-    local window = menu:createWindow(Rect(res * 0.5 - size * 0.5, res * 0.5 + size * 0.5));
-    menu:registerWindow(window, "Transfer Crew/Cargo"%_t);
+    local window = menu:createWindow(Rect(res * 0.5 - size * 0.5, res * 0.5 + size * 0.5))
+    menu:registerWindow(window, "Transfer Crew/Cargo"%_t)
 
-    window.caption = "Transfer Crew and Cargo"%_t
+    window.caption = "Transfer Crew, Cargo and Fighters"%_t
     window.showCloseButton = 1
     window.moveable = 1
 
@@ -101,6 +107,7 @@ function initUI()
 
         local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 7, 0, 0.80)
+        local vsplit1 = UIVerticalSplitter(vsplit.left, 3, 0, 0.15)
         local vsplit2 = UIVerticalSplitter(vsplit.right, 3, 0, 0.5)
 
         local button = leftFrame:createButton(vsplit2.right, ">", "onPlayerTransferCrewPressed")
@@ -108,17 +115,22 @@ function initUI()
         numberTextBox.text = "1"
         numberTextBox.allowedCharacters = "0123456789"
         numberTextBox.clearOnClick = 1
-        local bar = leftFrame:createStatisticsBar(vsplit.left, ColorRGB(1, 1, 1))
+        local bar = leftFrame:createStatisticsBar(vsplit1.right, ColorRGB(1, 1, 1))
+        local icon = leftFrame:createPicture(vsplit1.left,"data/textures/icons/backup.png")
         button.textSize = 12
+        icon.flipped = true -- else the icon is upside down
+        icon.isIcon = true
 
         table.insert(playerCrewButtons, button)
         table.insert(playerCrewBars, bar)
         table.insert(playerCrewNumberFields, numberTextBox)
+        table.insert(playerCrewIcon, icon)
         crewmenByButton[button.index] = i
 
 
         local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 7, 0, 0.20)
+        local vsplit1 = UIVerticalSplitter(vsplit.right, 3, 0, 0.85)
         local vsplit2 = UIVerticalSplitter(vsplit.left, 3, 0, 0.5)
         
         local button = rightFrame:createButton(vsplit2.left, "<", "onSelfTransferCrewPressed")
@@ -126,15 +138,16 @@ function initUI()
         numberTextBox.text = "1"
         numberTextBox.allowedCharacters = "0123456789"
         numberTextBox.clearOnClick = 1
-        local bar = rightFrame:createStatisticsBar(vsplit.right, ColorRGB(1, 1, 1))
+        local bar = rightFrame:createStatisticsBar(vsplit1.left, ColorRGB(1, 1, 1))
+        local icon = rightFrame:createPicture(vsplit1.right,"data/textures/icons/backup.png")
         button.textSize = 12
-
-
-
+        icon.flipped = true -- else the icon is upside down
+        icon.isIcon = true
 
         table.insert(selfCrewButtons, button)
         table.insert(selfCrewBars, bar)
         table.insert(selfCrewNumberFields, numberTextBox)
+        table.insert(selfCrewIcon, icon)
         crewmenByButton[button.index] = i
 
     end
@@ -159,13 +172,13 @@ function initUI()
 
     selfTotalCargoBar = rightFrame:createNumbersBar(Rect())
     rightLister:placeElementCenter(selfTotalCargoBar)
-    
-    
-    
+
+
     for i = 1, 30 do
 
         local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 7, 0, 0.80)
+        local vsplit1 = UIVerticalSplitter(vsplit.left, 3, 0, 0.15)
         local vsplit2 = UIVerticalSplitter(vsplit.right, 3, 0, 0.5)
     
         local button = leftFrame:createButton(vsplit2.right, ">", "onPlayerTransferCargoPressed")
@@ -174,18 +187,23 @@ function initUI()
         numberTextBox.allowedCharacters = "0123456789"
         numberTextBox.clearOnClick = 1
         
-        local bar = leftFrame:createStatisticsBar(vsplit.left, ColorInt(0xa0a0a0))
+        local bar = leftFrame:createStatisticsBar(vsplit1.right, ColorInt(0xa0a0a0))
+        local icon = leftFrame:createPicture(vsplit1.left,"data/textures/icons/trade.png")
         button.textSize = 12
+        icon.flipped = true -- else the icon is upside down
+        icon.isIcon = true
 
 
         table.insert(playerCargoButtons, button)
         table.insert(playerCargoBars, bar)
         table.insert(playerCargoNumberFields, numberTextBox)
+        table.insert(playerCargoIcon, icon)
         cargosByButton[button.index] = i
 
 
         local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 10, 0, 0.20)
+        local vsplit1 = UIVerticalSplitter(vsplit.right, 3, 0, 0.85)
         local vsplit2 = UIVerticalSplitter(vsplit.left, 3, 0, 0.5)
 
 
@@ -196,11 +214,15 @@ function initUI()
         numberTextBox.clearOnClick = 1
         
         local bar = rightFrame:createStatisticsBar(vsplit.right, ColorInt(0xa0a0a0))
+        local icon = rightFrame:createPicture(vsplit1.right,"data/textures/icons/trade.png")
         button.textSize = 12
+        icon.flipped = true -- else the icon is upside down
+        icon.isIcon = true
 
         table.insert(selfCargoButtons, button)
         table.insert(selfCargoBars, bar)
         table.insert(selfCargoNumberFields, numberTextBox)
+        table.insert(selfCargoIcon, icon)
         cargosByButton[button.index] = i
 
     end
@@ -230,7 +252,6 @@ function initUI()
         sel.padding = 2
         sel.dropIntoEnabled = 1
         sel.entriesSelectable = 0
-
 
 
         local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 50))
@@ -284,14 +305,12 @@ function updateData()
 
     for _, bar in pairs(playerCrewBars) do bar.visible = false end
     for _, bar in pairs(selfCrewBars) do bar.visible = false end
-    for _, bar in pairs(playerCargoBars) do bar.visible = false end
-    for _, bar in pairs(selfCargoBars) do bar.visible = false end
     for _, button in pairs(playerCrewButtons) do button.visible = false end
     for _, button in pairs(selfCrewButtons) do button.visible = false end
-    for _, button in pairs(playerCargoButtons) do button.visible = false end
-    for _, button in pairs(selfCargoButtons) do button.visible = false end
     for _, nField in pairs(playerCrewNumberFields) do nField.visible = false end
     for _, nField in pairs(selfCrewNumberFields) do nField.visible = false end
+    for _, icon in pairs(playerCrewIcon) do icon.visible = false end
+    for _, icon in pairs(selfCrewIcon) do icon.visible = false end
 
     local i = 1
     for _, p in pairs(getSortedCrewmen(playerShip)) do
@@ -312,6 +331,11 @@ function updateData()
 
         local button = playerCrewButtons[i]
         button.visible = true
+        
+        local icon = playerCrewIcon[i]
+        icon.picture = crewman.profession.icon
+        icon.color = crewman.profession.color
+        icon.visible = true
         
         local numField = playerCrewNumberFields[i]
         local nFAmount = numField.text
@@ -349,6 +373,11 @@ function updateData()
         local button = selfCrewButtons[i]
         button.visible = true
         
+        local icon = selfCrewIcon[i]
+        icon.picture = crewman.profession.icon
+        icon.color = crewman.profession.color
+        icon.visible = true
+        
         local numField = selfCrewNumberFields[i]
         local nFAmount = numField.text
         if nFAmount == "" then
@@ -380,14 +409,17 @@ function updateData()
         local bar = playerCargoBars[i]
         local button = playerCargoButtons[i]
         local numField = playerCargoNumberFields[i]
+        local icon = playerCargoIcon[i]
         if i > playerShip.numCargos then
             bar:hide();
             button:hide();
             numField:hide();
+            icon:hide();
         else
             bar:show();
             button:show();
             numField:show();
+            icon:show();
             local nFAmount =  numField.text
             if nFAmount == "" then
                 nFAmount = 0
@@ -402,6 +434,7 @@ function updateData()
             local maxSpace = playerShip.maxCargoSpace
             bar:setRange(0, maxSpace)
             bar.value = amount * good.size
+            icon.picture = good.icon
 
             if amount > 1 then
                 bar.name = amount .. " " .. good.plural
@@ -415,15 +448,17 @@ function updateData()
         local bar = selfCargoBars[i]
         local button = selfCargoButtons[i]
         local numField = selfCargoNumberFields[i]
-
+        local icon = selfCargoIcon[i]
         if i > ship.numCargos then
             bar:hide();
             button:hide();
             numField:hide();
+            icon:hide();
         else
             bar:show();
             button:show();
             numField:show();
+            icon:show();
             local nFAmount =  numField.text
             if nFAmount == "" then
                 nFAmount = 0
@@ -438,6 +473,7 @@ function updateData()
             local maxSpace = ship.maxCargoSpace
             bar:setRange(0, maxSpace)
             bar.value = amount * good.size
+            icon.picture = good.icon
 
             if amount > 1 then
                 bar.name = amount .. " " .. good.plural
@@ -447,6 +483,21 @@ function updateData()
                 selfTotalCargoBar:addEntry(amount * good.size, amount .. " " .. good.name, ColorInt(0xffa0a0a0))
             end
         end
+    end
+
+    -- update fighters info
+    playerTotalFightersBar:clear()
+    selfTotalFightersBar:clear()
+
+    --fetching the 2 hangars
+    local playerHangar = Hangar(playerShip.index)
+    local selfHangar = Hangar(ship.index)
+    playerTotalFightersBar:setRange(0, playerHangar.space)
+    selfTotalFightersBar:setRange(0, selfHangar.space)
+
+    local squads = {playerHangar:getSquads()}
+    for _, i in pairs(squads) do --looping each squad id, starting at 0
+
     end
 
 end
