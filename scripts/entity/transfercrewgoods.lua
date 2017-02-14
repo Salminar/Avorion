@@ -3,21 +3,26 @@ package.path = package.path .. ";data/scripts/lib/?.lua"
 require("utility")
 require("stringutility")
 
+
 local playerTotalCrewBar;
 local selfTotalCrewBar;
 
 local playerCrewBars = {}
 local playerCrewButtons = {}
+local playerCrewIcon = {}
 local selfCrewBars = {}
 local selfCrewButtons = {}
+local selfCrewIcon = {}
 
 local playerTotalCargoBar;
 local selfTotalCargoBar;
 
 local playerCargoBars = {}
 local playerCargoButtons = {}
+local playerCargoIcon = {}
 local selfCargoBars = {}
 local selfCargoButtons = {}
+local selfCargoIcon = {}
 
 local playerTotalFighterBar;
 local selfTotalFighterBar;
@@ -60,10 +65,10 @@ function initUI()
     local size = vec2(700, 600)
 
     local menu = ScriptUI()
-    local window = menu:createWindow(Rect(res * 0.5 - size * 0.5, res * 0.5 + size * 0.5));
-    menu:registerWindow(window, "Transfer Crew/Cargo"%_t);
+    local window = menu:createWindow(Rect(res * 0.5 - size * 0.5, res * 0.5 + size * 0.5))
+    menu:registerWindow(window, "Transfer Crew/Cargo"%_t)
 
-    window.caption = "Transfer Crew and Cargo"%_t
+    window.caption = "Transfer Crew, Cargo and Fighters"%_t
     window.showCloseButton = 1
     window.moveable = 1
 
@@ -95,36 +100,45 @@ function initUI()
 
         local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 7, 0, 0.80)
+        local vsplit1 = UIVerticalSplitter(vsplit.left, 3, 0, 0.15)
         local vsplit2 = UIVerticalSplitter(vsplit.right, 3, 0, 0.5)
 
         local button = leftFrame:createButton(vsplit2.right, ">", "onPlayerTransferCrewPressed")
         local button2 = leftFrame:createButton(vsplit2.left, ">>", "onPlayerTransferCrewPressedx")
-        local bar = leftFrame:createStatisticsBar(vsplit.left, ColorRGB(1, 1, 1))
+        local bar = leftFrame:createStatisticsBar(vsplit1.right, ColorRGB(1, 1, 1))
+        local icon = leftFrame:createPicture(vsplit1.left,"data/textures/icons/backup.png")
         button.textSize = 12
         button2.textSize = 12
+        icon.flipped = true -- else the icon is upside down
+        icon.isIcon = true
 
         table.insert(playerCrewButtons, button)
         table.insert(playerCrewButtons, button2)
         table.insert(playerCrewBars, bar)
+        table.insert(playerCrewIcon, icon)
         crewmenByButton[button.index] = i
         crewmenByButton[button2.index] = i
 
 
         local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 7, 0, 0.20)
+        local vsplit1 = UIVerticalSplitter(vsplit.right, 3, 0, 0.85)
         local vsplit2 = UIVerticalSplitter(vsplit.left, 3, 0, 0.5)
 
 
         local button = rightFrame:createButton(vsplit2.left, "<", "onSelfTransferCrewPressed")
         local button2 = rightFrame:createButton(vsplit2.right, "<<", "onSelfTransferCrewPressedx")
-        local bar = rightFrame:createStatisticsBar(vsplit.right, ColorRGB(1, 1, 1))
+        local bar = rightFrame:createStatisticsBar(vsplit1.left, ColorRGB(1, 1, 1))
+        local icon = rightFrame:createPicture(vsplit1.right,"data/textures/icons/backup.png")
         button.textSize = 12
         button2.textSize = 12
-
+        icon.flipped = true -- else the icon is upside down
+        icon.isIcon = true
 
         table.insert(selfCrewButtons, button)
         table.insert(selfCrewButtons, button2)
         table.insert(selfCrewBars, bar)
+        table.insert(selfCrewIcon, icon)
         crewmenByButton[button.index] = i
         crewmenByButton[button2.index] = i
 
@@ -134,6 +148,7 @@ function initUI()
 
 --    cargoTab:createFrame(vSplit.left);
 --    cargoTab:createFrame(vSplit.right);
+
 
 
     local leftLister = UIVerticalLister(vSplit.left, 10, 10)
@@ -155,36 +170,48 @@ function initUI()
 
         local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 7, 0, 0.80)
+        local vsplit1 = UIVerticalSplitter(vsplit.left, 3, 0, 0.15)
         local vsplit2 = UIVerticalSplitter(vsplit.right, 3, 0, 0.5)
+
 
 
         local button = leftFrame:createButton(vsplit2.right, ">", "onPlayerTransferCargoPressed")
         local button2 = leftFrame:createButton(vsplit2.left, ">>", "onPlayerTransferCargoPressedx")
-        local bar = leftFrame:createStatisticsBar(vsplit.left, ColorInt(0xa0a0a0))
+        local bar = leftFrame:createStatisticsBar(vsplit1.right, ColorInt(0xa0a0a0))
+        local icon = leftFrame:createPicture(vsplit1.left,"data/textures/icons/trade.png")
         button.textSize = 12
         button2.textSize = 12
+        icon.flipped = true -- else the icon is upside down
+        icon.isIcon = true
+
 
         table.insert(playerCargoButtons, button)
         table.insert(playerCargoButtons, button2)
         table.insert(playerCargoBars, bar)
+        table.insert(playerCargoIcon, icon)
         cargosByButton[button.index] = i
         cargosByButton[button2.index] = i
 
 
         local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 10, 0, 0.20)
+        local vsplit1 = UIVerticalSplitter(vsplit.right, 3, 0, 0.85)
         local vsplit2 = UIVerticalSplitter(vsplit.left, 3, 0, 0.5)
 
 
         local button = rightFrame:createButton(vsplit2.left, "<", "onSelfTransferCargoPressed")
         local button2 = rightFrame:createButton(vsplit2.right, "<<", "onSelfTransferCargoPressedx")
         local bar = rightFrame:createStatisticsBar(vsplit.right, ColorInt(0xa0a0a0))
+        local icon = rightFrame:createPicture(vsplit1.right,"data/textures/icons/trade.png")
         button.textSize = 12
         button2.textSize = 12
+        icon.flipped = true -- else the icon is upside down
+        icon.isIcon = true
 
         table.insert(selfCargoButtons, button)
         table.insert(selfCargoButtons, button2)
         table.insert(selfCargoBars, bar)
+        table.insert(selfCargoIcon, icon)
         cargosByButton[button.index] = i
         cargosByButton[button2.index] = i
 
@@ -269,12 +296,10 @@ function updateData()
 
     for _, bar in pairs(playerCrewBars) do bar.visible = false end
     for _, bar in pairs(selfCrewBars) do bar.visible = false end
-    for _, bar in pairs(playerCargoBars) do bar.visible = false end
-    for _, bar in pairs(selfCargoBars) do bar.visible = false end
     for _, button in pairs(playerCrewButtons) do button.visible = false end
     for _, button in pairs(selfCrewButtons) do button.visible = false end
-    for _, button in pairs(playerCargoButtons) do button.visible = false end
-    for _, button in pairs(selfCargoButtons) do button.visible = false end
+    for _, icon in pairs(playerCrewIcon) do icon.visible = false end
+    for _, icon in pairs(selfCrewIcon) do icon.visible = false end
 
     local i = 1
     for _, p in pairs(getSortedCrewmen(playerShip)) do
@@ -297,6 +322,10 @@ function updateData()
         button.visible = true
         local button = playerCrewButtons[i*2]
         button.visible = true
+        local icon = playerCrewIcon[i]
+        icon.picture = crewman.profession.icon
+        icon.color = crewman.profession.color
+        icon.visible = true
         i = i + 1
     end
 
@@ -321,8 +350,14 @@ function updateData()
         button.visible = true
         local button = selfCrewButtons[i*2]
         button.visible = true
+        local icon = selfCrewIcon[i]
+        icon.picture = crewman.profession.icon
+        icon.color = crewman.profession.color
+        icon.visible = true
         i = i + 1
     end
+
+
 
 
 
@@ -340,19 +375,23 @@ function updateData()
         local button = playerCargoButtons[i*2-1]
         local button2 = playerCargoButtons[i*2]
 
+        local icon = playerCargoIcon[i]
         if i > playerShip.numCargos then
             bar:hide();
             button:hide();
             button2:hide();
+            icon:hide();
         else
             bar:show();
             button:show();
             button2:show();
+            icon:show();
 
             local good, amount = playerShip:getCargo(i - 1)
             local maxSpace = playerShip.maxCargoSpace
             bar:setRange(0, maxSpace)
             bar.value = amount * good.size
+            icon.picture = good.icon
 
             if amount > 1 then
                 bar.name = amount .. " " .. good.plural
@@ -367,19 +406,23 @@ function updateData()
         local button = selfCargoButtons[i*2-1]
         local button2 = selfCargoButtons[i*2]
 
+        local icon = selfCargoIcon[i]
         if i > ship.numCargos then
             bar:hide();
             button:hide();
             button2:hide();
+            icon:hide();
         else
             bar:show();
             button:show();
             button2:show();
+            icon:show();
 
             local good, amount = ship:getCargo(i - 1)
             local maxSpace = ship.maxCargoSpace
             bar:setRange(0, maxSpace)
             bar.value = amount * good.size
+            icon.picture = good.icon
 
             if amount > 1 then
                 bar.name = amount .. " " .. good.plural
@@ -409,6 +452,7 @@ function onSelfTransferCrewPressed(button)
     -- check which crew member type
     local crewmanIndex = crewmenByButton[button.index]
     if not crewmanIndex then return end
+
 
 
     invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, true)
