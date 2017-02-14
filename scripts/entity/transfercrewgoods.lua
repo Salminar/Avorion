@@ -23,14 +23,9 @@ local selfCargoButtons = {}
 local playerTotalFighterBar;
 local selfTotalFighterBar;
 
-local playerFighterBars = {}
-local playerFighterButtons = {}
-local selfFighterBars = {}
-local selfFighterButtons = {}
 
 local crewmenByButton = {}
 local cargosByButton = {}
-local fightersByButton = {}
 
 
 -- if this function returns false, the script will not be listed in the interaction window,
@@ -209,6 +204,28 @@ function initUI()
 
     local leftFrame = fightersTab:createScrollFrame(vSplit.left)
     local rightFrame = fightersTab:createScrollFrame(vSplit.right)
+    
+    playerTotalFightersBar = leftFrame:createNumbersBar(Rect())
+    leftLister:placeElementCenter(playerTotalFightersBar)
+
+    selfTotalFightersBar = rightFrame:createNumbersBar(Rect())
+    rightLister:placeElementCenter(selfTotalFightersBar)
+    
+    for i = 1, 12 do
+        local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 50))
+        local sel = leftFrame:createSelection(rect, 6)
+        sel.padding = 2
+        sel.dropIntoEnabled = 1
+        sel.entriesSelectable = 0
+
+
+
+        local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 50))
+        local sel = rightFrame:createSelection(rect, 6)
+        sel.padding = 2
+        sel.dropIntoEnabled = 1
+        sel.entriesSelectable = 0
+    end
 end
 
 
