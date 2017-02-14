@@ -19,14 +19,12 @@ local playerCargoButtons = {}
 local selfCargoBars = {}
 local selfCargoButtons = {}
 
-
 local playerTotalFighterBar;
 local selfTotalFighterBar;
 
 
 local crewmenByButton = {}
 local cargosByButton = {}
-
 
 -- if this function returns false, the script will not be listed in the interaction window,
 -- even though its UI may be registered
@@ -58,15 +56,14 @@ end
 
 -- create all required UI elements for the client side
 function initUI()
-
     local res = getResolution();
     local size = vec2(700, 600)
 
     local menu = ScriptUI()
     local window = menu:createWindow(Rect(res * 0.5 - size * 0.5, res * 0.5 + size * 0.5));
-    menu:registerWindow(window, "Transfer Crew/Cargo/Fighters"%_t);
+    menu:registerWindow(window, "Transfer Crew/Cargo"%_t);
 
-    window.caption = "Transfer Crew, Cargo and Fighters"%_t
+    window.caption = "Transfer Crew and Cargo"%_t
     window.showCloseButton = 1
     window.moveable = 1
 
@@ -114,8 +111,9 @@ function initUI()
 
 
         local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 25))
-        local vsplit = UIVerticalSplitter(rect, 10, 0, 0.20)
+        local vsplit = UIVerticalSplitter(rect, 7, 0, 0.20)
         local vsplit2 = UIVerticalSplitter(vsplit.left, 3, 0, 0.5)
+
 
         local button = rightFrame:createButton(vsplit2.left, "<", "onSelfTransferCrewPressed")
         local button2 = rightFrame:createButton(vsplit2.right, "<<", "onSelfTransferCrewPressedx")
@@ -153,10 +151,10 @@ function initUI()
     selfTotalCargoBar = rightFrame:createNumbersBar(Rect())
     rightLister:placeElementCenter(selfTotalCargoBar)
 
-    for i = 1, 20 do
+    for i = 1, 30 do
 
         local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 25))
-        local vsplit = UIVerticalSplitter(rect, 10, 0, 0.80)
+        local vsplit = UIVerticalSplitter(rect, 7, 0, 0.80)
         local vsplit2 = UIVerticalSplitter(vsplit.right, 3, 0, 0.5)
 
 
@@ -284,7 +282,7 @@ function updateData()
         local crewman = p.crewman
         local num = p.num
 
-        local caption = num .. " " .. crewman.profession.name
+        local caption = num .. " " .. crewman.profession.name .. " lv " .. crewman.level
 
         playerTotalCrewBar:addEntry(num, caption, crewman.profession.color)
 
@@ -308,7 +306,7 @@ function updateData()
         local crewman = p.crewman
         local num = p.num
 
-        local caption = num .. " " .. crewman.profession.name
+        local caption = num .. " " .. crewman.profession.name .. " lv " .. crewman.level
 
         selfTotalCrewBar:addEntry(num, caption, crewman.profession.color)
 
@@ -412,6 +410,7 @@ function onSelfTransferCrewPressed(button)
     local crewmanIndex = crewmenByButton[button.index]
     if not crewmanIndex then return end
 
+
     invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, true)
 end
 
@@ -500,6 +499,7 @@ end
 
 function onSelfTransferCargoPressed(button)
     -- transfer cargo from self to player ship
+
 
     -- check which cargo
     local cargo = cargosByButton[button.index]
