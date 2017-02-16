@@ -34,6 +34,12 @@ local selfCargoIcon = {}
 local playerTotalFighterBar;
 local selfTotalFighterBar;
 
+local playerFighters = {}
+local selfFighters = {}
+local playerSquad = {}
+local selfSquad = {}
+
+local fightersByButton = {}
 local crewmenByButton = {}
 local cargosByButton = {}
 
@@ -67,7 +73,6 @@ end
 
 -- create all required UI elements for the client side
 function initUI()
-
     local res = getResolution();
     local size = vec2(700, 600)
 
@@ -132,7 +137,7 @@ function initUI()
         local vsplit = UIVerticalSplitter(rect, 7, 0, 0.20)
         local vsplit1 = UIVerticalSplitter(vsplit.right, 3, 0, 0.85)
         local vsplit2 = UIVerticalSplitter(vsplit.left, 3, 0, 0.5)
-        
+
         local button = rightFrame:createButton(vsplit2.left, "<", "onSelfTransferCrewPressed")
         local numberTextBox = rightFrame:createTextBox(vsplit2.right, "onNumberfieldEntered")
         numberTextBox.text = "1"
@@ -149,7 +154,6 @@ function initUI()
         table.insert(selfCrewNumberFields, numberTextBox)
         table.insert(selfCrewIcon, icon)
         crewmenByButton[button.index] = i
-
     end
 
     local cargoTab = tabbedWindow:createTab("Cargo"%_t, "data/textures/icons/trade.png", "Exchange cargo"%_t)
@@ -180,7 +184,7 @@ function initUI()
         local vsplit = UIVerticalSplitter(rect, 7, 0, 0.80)
         local vsplit1 = UIVerticalSplitter(vsplit.left, 3, 0, 0.15)
         local vsplit2 = UIVerticalSplitter(vsplit.right, 3, 0, 0.5)
-    
+
         local button = leftFrame:createButton(vsplit2.right, ">", "onPlayerTransferCargoPressed")
         local numberTextBox = leftFrame:createTextBox(vsplit2.left, "onNumberfieldEntered")
         numberTextBox.text = "1"
@@ -228,9 +232,8 @@ function initUI()
     end
 
     local fightersTab = tabbedWindow:createTab("Fighters"%_t, "data/textures/icons/fighter.png", "Exchange fighters"%_t)
-    
-    
-    
+
+
     local leftLister = UIVerticalLister(vSplit.left, 10, 10)
     local rightLister = UIVerticalLister(vSplit.left, 10, 10)
 
@@ -246,19 +249,49 @@ function initUI()
     selfTotalFightersBar = rightFrame:createNumbersBar(Rect())
     rightLister:placeElementCenter(selfTotalFightersBar)
     
-    for i = 1, 12 do
-        local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 50))
-        local sel = leftFrame:createSelection(rect, 6)
-        sel.padding = 2
-        sel.dropIntoEnabled = 1
-        sel.entriesSelectable = 0
+    for i = 1, 6 do
+      local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 125))
+      local hsplit = UIHorizontalSplitter(rect, 5, 0, 0.2)
+      local hsplit2 = UIHorizontalSplitter(hsplit.bottom, 0, 0, 0.5)
+      local label = leftFrame:createLabel(vec2(hsplit.top.lower.x+2,hsplit.top.lower.y+4), "Squad "..i, 12)
+      local vsplit = UIVerticalMultiSplitter(hsplit2.top, 2, 0, 5)
+      local vsplit2 = UIVerticalMultiSplitter(hsplit2.bottom, 2, 0, 5)
+      for j = 0, 5 do
+        local pic1=leftFrame:createPicture(vsplit:partition(j),"data/textures/icons/fighter.png")
+        local button=leftFrame:createButton(vsplit:partition(j),'',"onPlayerTFighter")
+        pic1.flipped = true -- else the icon is upside down
+        pic1.isIcon = true
+        local pic2=leftFrame:createPicture(vsplit2:partition(j),"data/textures/icons/fighter.png")
+        local button2=leftFrame:createButton(vsplit2:partition(j),'',"onPlayerTFighter")
+        pic2.flipped = true -- else the icon is upside down
+        pic2.isIcon = true
+        fightersByButton[button.index]={s=i-1, f=j}
+        fightersByButton[button2.index]={s=i-1, f=j+6}
+        table.insert(playerFighters, { pict=pic1, button=button })
+        table.insert(playerFighters, { pict=pic2, button=button2 })
+      end
 
 
-        local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 50))
-        local sel = rightFrame:createSelection(rect, 6)
-        sel.padding = 2
-        sel.dropIntoEnabled = 1
-        sel.entriesSelectable = 0
+      local rect = rightLister:placeCenter(vec2(rightLister.inner.width,125))
+      local hsplit = UIHorizontalSplitter(rect, 5, 0, 0.2)
+      local hsplit2 = UIHorizontalSplitter(hsplit.bottom, 0, 0, 0.5)
+      local label = rightFrame:createLabel(vec2(hsplit.top.lower.x+2,hsplit.top.lower.y+4), "Squad "..i, 12)
+      local vsplit = UIVerticalMultiSplitter(hsplit2.top, 2, 0, 5)
+      local vsplit2 = UIVerticalMultiSplitter(hsplit2.bottom, 2, 0, 5)
+      for j = 0, 5 do
+        local pic1=rightFrame:createPicture(vsplit:partition(j),"data/textures/icons/fighter.png")
+        local button=rightFrame:createButton(vsplit:partition(j),'',"onSelfTFighter")
+        pic1.flipped = true -- else the icon is upside down
+        pic1.isIcon = true
+        local pic2=rightFrame:createPicture(vsplit2:partition(j),"data/textures/icons/fighter.png")
+        local button2=rightFrame:createButton(vsplit2:partition(j),'',"onSelfTFighter")
+        pic2.flipped = true -- else the icon is upside down
+        pic2.isIcon = true
+        fightersByButton[button.index]={s=i-1, f=j}
+        fightersByButton[button2.index]={s=i-1, f=j+6}
+        table.insert(selfFighters, { pict=pic1, button=button })
+        table.insert(selfFighters, { pict=pic2, button=button2 })
+      end
     end
 end
 
@@ -394,9 +427,6 @@ function updateData()
         i = i + 1
     end
 
-
-
-
     -- update cargo info
     playerTotalCargoBar:clear()
     selfTotalCargoBar:clear()
@@ -494,10 +524,95 @@ function updateData()
     local selfHangar = Hangar(ship.index)
     playerTotalFightersBar:setRange(0, playerHangar.space)
     selfTotalFightersBar:setRange(0, selfHangar.space)
-
-    local squads = {playerHangar:getSquads()}
-    for _, i in pairs(squads) do --looping each squad id, starting at 0
-
+    local squads = {playerHangar:getSquads()} --player panel
+    local lsquad = -1
+    for _, squad in pairs(squads) do --looping through squads
+      local squadmax=playerHangar:getSquadFighters(squad) -- the length of current squad
+      for j=0, squadmax-1 do --looping for each fighter
+        local fighter = playerHangar:getFighter(squad,j)
+        local title = "${weaponPrefix} Fighter"%_t % fighter
+        playerTotalFightersBar:addEntry(fighter.volume,title,fighter.rarity.color)
+        local findex
+        if(j<6)then --calculate where are the corresponding UI objects
+          findex = squad*12+j*2+1
+        else
+          findex = squad*12+j*2-10
+        end
+        playerFighters[findex].pict.picture = fighter.weaponIcon
+        playerFighters[findex].pict.color = fighter.rarity.color
+        playerFighters[findex].pict.tooltip = title
+        playerFighters[findex].pict.visible = true
+        playerFighters[findex].button.visible = true
+      end
+      local squadmaxf=playerHangar:getSquadMaxFighters(squad)
+      for j=squadmax, squadmaxf-1 do -- hiding unused slots in squad
+        local findex
+        if(j<6)then
+          findex = squad*12+j*2+1
+        else
+          findex = squad*12+j*2-10
+        end
+        playerFighters[findex].pict.visible = false
+        playerFighters[findex].button.visible = false
+      end
+      if squad > lsquad then lsquad = squad end
+    end
+    for i=lsquad+1, 5 do -- make invisible the missing squads
+      for j=0, 11 do
+        local findex
+        if(j<6)then
+          findex = i*12+j*2+1
+        else
+          findex = i*12+j*2-10
+        end
+        playerFighters[findex].pict.visible = false
+        playerFighters[findex].button.visible = false
+      end
+    end
+    local squads = {selfHangar:getSquads()} --other panel
+    local lsquad = -1
+    for _, squad in pairs(squads) do --looping through squads
+      local squadmax=selfHangar:getSquadFighters(squad) -- the length of current squad
+      for j=0, squadmax-1 do --looping for each fighter
+        local fighter = selfHangar:getFighter(squad,j)
+        local title = "${weaponPrefix} Fighter"%_t % fighter
+        selfTotalFightersBar:addEntry(fighter.volume,title,fighter.rarity.color)
+        local findex
+        if(j<6)then --calculate where are the corresponding UI objects
+          findex = squad*12+j*2+1
+        else
+          findex = squad*12+j*2-10
+        end
+        selfFighters[findex].pict.picture = fighter.weaponIcon
+        selfFighters[findex].pict.color = fighter.rarity.color
+        selfFighters[findex].pict.tooltip = title
+        selfFighters[findex].pict.visible = true
+        selfFighters[findex].button.visible = true
+      end
+      local squadmaxf=selfHangar:getSquadMaxFighters(squad)
+      for j=squadmax, squadmaxf-1 do -- hiding unused slots in squad
+        local findex
+        if(j<6)then
+          findex = squad*12+j*2+1
+        else
+          findex = squad*12+j*2-10
+        end
+        selfFighters[findex].pict.visible = false
+        selfFighters[findex].button.visible = false
+      end
+      if squad > lsquad then lsquad = squad end
+    end
+    for i=lsquad+1, 5 do -- make invisible the missing squads
+      for j=0, 11 do
+        local findex
+        if(j<6)then
+          findex = i*12+j*2+1
+        else
+          findex = i*12+j*2-10
+        end
+        selfFighters[findex].pict.visible = false
+        selfFighters[findex].button.visible = false
+      end
     end
 
 end
@@ -517,9 +632,7 @@ function onPlayerTransferCrewPressed(button)
             amount = MAXTRANSFER
         end
     end
-    
-    
-    
+
     if not crewmanIndex then return end
     for i=1, amount do
         invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, false)
@@ -541,7 +654,8 @@ function onSelfTransferCrewPressed(button)
             amount = MAXTRANSFER
         end
     end
-    
+
+
     if not crewmanIndex then return end
     for i=1, amount do
         invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, true)
@@ -549,6 +663,8 @@ function onSelfTransferCrewPressed(button)
 end
 
 function onNumberfieldEntered()
+
+
 
 
 end
@@ -639,6 +755,16 @@ function onSelfTransferCargoPressed(button)
     end
 
 
+
+
+
+
+
+
+
+
+
+
     -- check which cargo
     
     if cargo == nil then return end
@@ -646,6 +772,13 @@ function onSelfTransferCargoPressed(button)
         invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, true)
     end
 end
+
+
+
+
+
+
+
 
 
 function transferCargo(cargoIndex, otherIndex, selfToOther)
@@ -691,6 +824,69 @@ function transferCargo(cargoIndex, otherIndex, selfToOther)
     sender:removeCargo(good, 1)
     receiver:addCargo(good, 1)
 
+    invokeClientFunction(Player(callingPlayer), "updateData")
+end
+
+function onPlayerTFighter(button)
+  local fighter=fightersByButton[button.index]--get the index of the squad and the fighter
+  invokeServerFunction("transferFighter", fighter, Player().craftIndex, false)
+end
+
+function onSelfTFighter(button)
+  local fighter=fightersByButton[button.index]--get the index of the squad and the fighter
+  invokeServerFunction("transferFighter", fighter, Player().craftIndex, true)
+end
+
+function transferFighter(fighterIndex, otherIndex, selfToOther)
+    print(fighterIndex.s.."/"..fighterIndex.f)
+    local sender
+    local receiver
+
+    if selfToOther then
+        sender = Entity()
+        receiver = Entity(otherIndex)
+    else
+        sender = Entity(otherIndex)
+        receiver = Entity()
+    end
+    if sender.factionIndex ~= callingPlayer then --check ownership
+        local player = Player(callingPlayer)
+        if player then
+            player:sendChatMessage("Server"%_t, 1, "You don't own this craft."%_t)
+        end
+        return
+    end
+    -- check distance
+    if sender:getNearestDistance(receiver) > 5 then
+        Player(callingPlayer):sendChatMessage("Server"%_t, 1, "You're too far away."%_t)
+        return
+    end
+    local senderHangar = Hangar(sender.index)
+    local receiverHangar = Hangar(receiver.index)
+    local squads = {receiverHangar:getSquads()}
+    local freesquad = -1
+    for _, squad in pairs(squads) do -- getting some free space in receiver squads
+      local sqsize = receiverHangar:getSquadFighters(squad)
+      if sqsize < receiverHangar:getSquadMaxFighters(squad) then
+        freesquad = squad
+        break
+       end
+    end
+    
+    if freesquad < 0 then
+        Player(callingPlayer):sendChatMessage("Server"%_t, 1, "No space in receiver squads."%_t)
+        return
+    end
+    
+    local fighter = senderHangar:getFighter(fighterIndex.s,fighterIndex.f)
+    if fighter.volume > receiverHangar.freeSpace then -- checking free space in hangar
+      Player(callingPlayer):sendChatMessage("Server"%_t, 1, "Receiver hangar is full."%_t)
+      return
+    end
+
+    receiverHangar:addFighter(freesquad,fighter)
+    senderHangar:removeFighter(fighterIndex.f,fighterIndex.s)
+    
     invokeClientFunction(Player(callingPlayer), "updateData")
 end
 
