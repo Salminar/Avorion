@@ -4,25 +4,16 @@ require("utility")
 require("stringutility")
 
 
+
 local playerTotalCrewBar;
 local selfTotalCrewBar;
-
-local playerCrewBars = {}
-local playerCrewButtons = {}
-local playerCrewIcon = {}
-local selfCrewBars = {}
-local selfCrewButtons = {}
-local selfCrewIcon = {}
+local playerCrewUI = {}
+local selfCrewUI = {}
 
 local playerTotalCargoBar;
 local selfTotalCargoBar;
-
-local playerCargoBars = {}
-local playerCargoButtons = {}
-local playerCargoIcon = {}
-local selfCargoBars = {}
-local selfCargoButtons = {}
-local selfCargoIcon = {}
+local playerCargoUI = {}
+local selfCargoUI = {}
 
 local playerTotalFighterBar;
 local selfTotalFighterBar;
@@ -31,6 +22,7 @@ local playerFighters = {}
 local selfFighters = {}
 local playerSquad = {}
 local selfSquad = {}
+local fightersTab = nil
 
 local fightersByButton = {}
 local crewmenByButton = {}
@@ -108,50 +100,51 @@ function initUI()
         local vsplit1 = UIVerticalSplitter(vsplit.left, 3, 0, 0.15)
         local vsplit2 = UIVerticalSplitter(vsplit.right, 3, 0, 0.5)
 
-        local button = leftFrame:createButton(vsplit2.right, ">", "onPlayerTransferCrewPressed")
-        local button2 = leftFrame:createButton(vsplit2.left, ">>", "onPlayerTransferCrewPressedx")
-        local bar = leftFrame:createStatisticsBar(vsplit1.right, ColorRGB(1, 1, 1))
-        local icon = leftFrame:createPicture(vsplit1.left,"data/textures/icons/backup.png")
-        button.textSize = 12
-        button2.textSize = 12
-        icon.flipped = true -- else the icon is upside down
-        icon.isIcon = true
+        local pbutton = leftFrame:createButton(vsplit2.right, ">", "onPlayerTransferCrewPressed")
+        local pbutton2 = leftFrame:createButton(vsplit2.left, ">>", "onPlayerTransferCrewPressed")
 
-        table.insert(playerCrewButtons, button)
-        table.insert(playerCrewBars, bar)
-        table.insert(playerCrewButtons, button2)
-        table.insert(playerCrewIcon, icon)
-        crewmenByButton[button.index] = i
-        crewmenByButton[button2.index] = i
 
+
+        local pbar = leftFrame:createStatisticsBar(vsplit1.right, ColorRGB(1, 1, 1))
+        local picon = leftFrame:createPicture(vsplit1.left,"data/textures/icons/backup.png")
+        pbutton.textSize = 12
+
+        pbutton2.textSize = 12
+        picon.flipped = true -- else the icon is upside down
+        picon.isIcon = true
 
         local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 7, 0, 0.20)
         local vsplit1 = UIVerticalSplitter(vsplit.right, 3, 0, 0.85)
         local vsplit2 = UIVerticalSplitter(vsplit.left, 3, 0, 0.5)
-        local button = rightFrame:createButton(vsplit2.left, "<", "onSelfTransferCrewPressed")
-        local button2 = rightFrame:createButton(vsplit2.right, "<<", "onSelfTransferCrewPressedx")
-        local bar = rightFrame:createStatisticsBar(vsplit1.left, ColorRGB(1, 1, 1))
-        local icon = rightFrame:createPicture(vsplit1.right,"data/textures/icons/backup.png")
-        button.textSize = 12
-        button2.textSize = 12
-        icon.flipped = true -- else the icon is upside down
-        icon.isIcon = true
 
-        table.insert(selfCrewButtons, button)
-        table.insert(selfCrewBars, bar)
-        table.insert(selfCrewButtons, button2)
-        table.insert(selfCrewIcon, icon)
-        crewmenByButton[button.index] = i
-        crewmenByButton[button2.index] = i
+        local sbutton = rightFrame:createButton(vsplit2.left, "<", "onSelfTransferCrewPressed")
+        local sbutton2 = rightFrame:createButton(vsplit2.right, "<<", "onSelfTransferCrewPressed")
+
+
+
+        local sbar = rightFrame:createStatisticsBar(vsplit1.left, ColorRGB(1, 1, 1))
+        local sicon = rightFrame:createPicture(vsplit1.right,"data/textures/icons/backup.png")
+        sbutton.textSize = 12
+
+        sbutton2.textSize = 12
+        sicon.flipped = true -- else the icon is upside down
+        sicon.isIcon = true
+
+        table.insert(playerCrewUI, {pbutton=pbutton, pbutton2=pbutton2, pbar=pbar, picon=picon})
+        table.insert(selfCrewUI, {sbutton=sbutton, sbutton2=sbutton2, sbar=sbar, sicon=sicon})
+        crewmenByButton[pbutton.index] = i
+
+        crewmenByButton[pbutton2.index] = i
+        crewmenByButton[sbutton.index] = i
+
+        crewmenByButton[sbutton2.index] = i
     end
 
     local cargoTab = tabbedWindow:createTab("Cargo"%_t, "data/textures/icons/trade.png", "Exchange cargo"%_t)
 
 --    cargoTab:createFrame(vSplit.left);
 --    cargoTab:createFrame(vSplit.right);
-
-
 
     local leftLister = UIVerticalLister(vSplit.left, 10, 10)
     local rightLister = UIVerticalLister(vSplit.left, 10, 10)
@@ -169,28 +162,23 @@ function initUI()
     rightLister:placeElementCenter(selfTotalCargoBar)
 
     for i = 1, 30 do
-
         local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 7, 0, 0.80)
         local vsplit1 = UIVerticalSplitter(vsplit.left, 3, 0, 0.15)
         local vsplit2 = UIVerticalSplitter(vsplit.right, 3, 0, 0.5)
 
-        local button = leftFrame:createButton(vsplit2.right, ">", "onPlayerTransferCargoPressed")
-        local button2 = leftFrame:createButton(vsplit2.left, ">>", "onPlayerTransferCargoPressedx")
-        local bar = leftFrame:createStatisticsBar(vsplit1.right, ColorInt(0xa0a0a0))
-        local icon = leftFrame:createPicture(vsplit1.left,"data/textures/icons/trade.png")
-        button.textSize = 12
-        button2.textSize = 12
-        icon.flipped = true -- else the icon is upside down
-        icon.isIcon = true
+        local pbutton = leftFrame:createButton(vsplit2.right, ">", "onPlayerTransferCargoPressed")
+        local pbutton2 = leftFrame:createButton(vsplit2.left, ">>", "onPlayerTransferCargoPressed")
 
 
-        table.insert(playerCargoButtons, button)
-        table.insert(playerCargoButtons, button2)
-        table.insert(playerCargoBars, bar)
-        table.insert(playerCargoIcon, icon)
-        cargosByButton[button.index] = i
-        cargosByButton[button2.index] = i
+
+        local pbar = leftFrame:createStatisticsBar(vsplit1.right, ColorInt(0xa0a0a0))
+        local picon = leftFrame:createPicture(vsplit1.left,"data/textures/icons/trade.png")
+        pbutton.textSize = 12
+
+        pbutton2.textSize = 12
+        picon.flipped = true -- else the icon is upside down
+        picon.isIcon = true
 
 
         local rect = rightLister:placeCenter(vec2(rightLister.inner.width, 25))
@@ -198,27 +186,30 @@ function initUI()
         local vsplit1 = UIVerticalSplitter(vsplit.right, 3, 0, 0.85)
         local vsplit2 = UIVerticalSplitter(vsplit.left, 3, 0, 0.5)
 
+        local sbutton = rightFrame:createButton(vsplit2.left, "<", "onSelfTransferCargoPressed")
+        local sbutton2 = rightFrame:createButton(vsplit2.right, "<<", "onSelfTransferCargoPressed")
 
-        local button = rightFrame:createButton(vsplit2.left, "<", "onSelfTransferCargoPressed")
-        local button2 = rightFrame:createButton(vsplit2.right, "<<", "onSelfTransferCargoPressedx")
-        local bar = rightFrame:createStatisticsBar(vsplit.right, ColorInt(0xa0a0a0))
-        local icon = rightFrame:createPicture(vsplit1.right,"data/textures/icons/trade.png")
-        button.textSize = 12
-        button2.textSize = 12
-        icon.flipped = true -- else the icon is upside down
-        icon.isIcon = true
 
-        table.insert(selfCargoButtons, button)
-        table.insert(selfCargoButtons, button2)
-        table.insert(selfCargoBars, bar)
-        table.insert(selfCargoIcon, icon)
-        cargosByButton[button.index] = i
-        cargosByButton[button2.index] = i
 
+        local sbar = rightFrame:createStatisticsBar(vsplit.right, ColorInt(0xa0a0a0))
+        local sicon = rightFrame:createPicture(vsplit1.right,"data/textures/icons/trade.png")
+        sbutton.textSize = 12
+
+        sbutton2.textSize = 12
+        sicon.flipped = true -- else the icon is upside down
+        sicon.isIcon = true
+
+        table.insert(playerCargoUI, {pbutton=pbutton, pbutton2=pbutton2, pbar=pbar, picon=picon})
+        table.insert(selfCargoUI, {sbutton=sbutton, sbutton2=sbutton2, sbar=sbar, sicon=sicon})
+        cargosByButton[pbutton.index] = i
+
+        cargosByButton[pbutton2.index] = i
+        cargosByButton[sbutton.index] = i
+
+        cargosByButton[sbutton2.index] = i
     end
 
-    local fightersTab = tabbedWindow:createTab("Fighters"%_t, "data/textures/icons/fighter.png", "Exchange fighters"%_t)
-
+    fightersTab = tabbedWindow:createTab("Fighters"%_t, "data/textures/icons/fighter.png", "Exchange fighters"%_t)
 
     local leftLister = UIVerticalLister(vSplit.left, 10, 10)
     local rightLister = UIVerticalLister(vSplit.left, 10, 10)
@@ -253,10 +244,11 @@ function initUI()
         pic2.isIcon = true
         fightersByButton[button.index]={s=i-1, f=j}
         fightersByButton[button2.index]={s=i-1, f=j+6}
-        table.insert(playerFighters, { pict=pic1, button=button })
-        table.insert(playerFighters, { pict=pic2, button=button2 })
+        local toolt1
+        local toolt2
+        table.insert(playerFighters, { pict=pic1, button=button, tooltip=toolt1})
+        table.insert(playerFighters, { pict=pic2, button=button2, tooltip=toolt2})
       end
-
 
       local rect = rightLister:placeCenter(vec2(rightLister.inner.width,125))
       local hsplit = UIHorizontalSplitter(rect, 5, 0, 0.2)
@@ -275,8 +267,10 @@ function initUI()
         pic2.isIcon = true
         fightersByButton[button.index]={s=i-1, f=j}
         fightersByButton[button2.index]={s=i-1, f=j+6}
-        table.insert(selfFighters, { pict=pic1, button=button })
-        table.insert(selfFighters, { pict=pic2, button=button2 })
+        local toolt1
+        local toolt2
+        table.insert(selfFighters, { pict=pic1, button=button, tooltip=toolt1})
+        table.insert(selfFighters, { pict=pic2, button=button2, tooltip=toolt2 })
       end
     end
 end
@@ -322,12 +316,12 @@ function updateData()
     playerTotalCrewBar:setRange(0, playerShip.maxCrewSize)
     selfTotalCrewBar:setRange(0, ship.maxCrewSize)
 
-    for _, bar in pairs(playerCrewBars) do bar.visible = false end
-    for _, bar in pairs(selfCrewBars) do bar.visible = false end
-    for _, button in pairs(playerCrewButtons) do button.visible = false end
-    for _, button in pairs(selfCrewButtons) do button.visible = false end
-    for _, icon in pairs(playerCrewIcon) do icon.visible = false end
-    for _, icon in pairs(selfCrewIcon) do icon.visible = false end
+    for _, pUI in pairs(playerCrewUI) do
+      for _, element in pairs (pUI) do element.visible = false end
+    end
+    for _, sUI in pairs(selfCrewUI) do
+      for _, element in pairs (sUI) do element.visible = false end
+    end
 
     local i = 1
     for _, p in pairs(getSortedCrewmen(playerShip)) do
@@ -339,18 +333,28 @@ function updateData()
 
         playerTotalCrewBar:addEntry(num, caption, crewman.profession.color)
 
-        local singleBar = playerCrewBars[i]
-        singleBar.visible = true
-        singleBar:setRange(0, playerShip.maxCrewSize)
-        singleBar.value = num
-        singleBar.name = caption
-        singleBar.color = crewman.profession.color
+        local bar = playerCrewUI[i].pbar
+        bar.visible = true
+        bar:setRange(0, playerShip.maxCrewSize)
+        bar.value = num
+        bar.name = caption
+        bar.color = crewman.profession.color
 
-        local button = playerCrewButtons[i*2-1]
+        local button = playerCrewUI[i].pbutton
         button.visible = true
-        local button = playerCrewButtons[i*2]
+        local button = playerCrewUI[i].pbutton2
+
+
+
+
+
+
+
+
+
+
         button.visible = true
-        local icon = playerCrewIcon[i]
+        local icon = playerCrewUI[i].picon
         icon.picture = crewman.profession.icon
         icon.color = crewman.profession.color
         icon.visible = true
@@ -367,23 +371,38 @@ function updateData()
 
         selfTotalCrewBar:addEntry(num, caption, crewman.profession.color)
 
-        local singleBar = selfCrewBars[i]
-        singleBar.visible = true
-        singleBar:setRange(0, ship.maxCrewSize)
-        singleBar.value = num
-        singleBar.name = caption
-        singleBar.color = crewman.profession.color
+        local bar = selfCrewUI[i].sbar
+        bar.visible = true
+        bar:setRange(0, ship.maxCrewSize)
+        bar.value = num
+        bar.name = caption
+        bar.color = crewman.profession.color
 
-        local button = selfCrewButtons[i*2-1]
+        local button = selfCrewUI[i].sbutton
         button.visible = true
-        local button = selfCrewButtons[i*2]
+        local button = selfCrewUI[i].sbutton2
+
+
+
+
+
+
+
+
+
+
         button.visible = true
-        local icon = selfCrewIcon[i]
+        local icon = selfCrewUI[i].sicon
         icon.picture = crewman.profession.icon
         icon.color = crewman.profession.color
         icon.visible = true
         i = i + 1
     end
+--free space for both bars
+    local pfs=playerShip.maxCrewSize-playerShip.crewSize
+    local sfs=ship.maxCrewSize-ship.crewSize
+    playerTotalCrewBar:addEntry(pfs, 'Free beds : '..pfs, ColorRGB(0.1, 0.1, 0.1))
+    selfTotalCrewBar:addEntry(sfs, 'Free beds : '..sfs, ColorRGB(0.1, 0.1, 0.1))
 
     -- update cargo info
     playerTotalCargoBar:clear()
@@ -392,23 +411,24 @@ function updateData()
     playerTotalCargoBar:setRange(0, playerShip.maxCargoSpace)
     selfTotalCargoBar:setRange(0, ship.maxCargoSpace)
 
-    for i, v in pairs(playerCargoBars) do
+    for i, v in pairs(playerCargoUI) do
 
-        local bar = playerCargoBars[i]
-        local button = playerCargoButtons[i*2-1]
-        local button2 = playerCargoButtons[i*2]
-
-        local icon = playerCargoIcon[i]
+        local bar = playerCargoUI[i].pbar
+        local button = playerCargoUI[i].pbutton
+        local button2 = playerCargoUI[i].pbutton2
+        local icon = playerCargoUI[i].picon
         if i > playerShip.numCargos then
-            bar:hide();
-            button:hide();
-            button2:hide();
-            icon:hide();
+            for _, element in pairs (playerCargoUI[i]) do element:hide() end
         else
-            bar:show();
-            button:show();
-            button2:show();
-            icon:show();
+            for _, element in pairs (playerCargoUI[i]) do element:show() end
+
+
+
+
+
+
+
+
 
             local good, amount = playerShip:getCargo(i - 1)
             local maxSpace = playerShip.maxCargoSpace
@@ -425,21 +445,23 @@ function updateData()
             end
         end
 
-        local bar = selfCargoBars[i]
-        local button = selfCargoButtons[i*2-1]
-        local button2 = selfCargoButtons[i*2]
-
-        local icon = selfCargoIcon[i]
+        local bar = selfCargoUI[i].sbar
+        local button = selfCargoUI[i].sbutton
+        local button2 = selfCargoUI[i].sbutton2
+        local icon = selfCargoUI[i].sicon
         if i > ship.numCargos then
-            bar:hide();
-            button:hide();
-            button2:hide();
-            icon:hide();
+            for _, element in pairs (selfCargoUI[i]) do element:hide() end
         else
-            bar:show();
-            button:show();
-            button2:show();
-            icon:show();
+            for _, element in pairs (selfCargoUI[i]) do element:show() end
+
+
+
+
+
+
+
+
+
 
             local good, amount = ship:getCargo(i - 1)
             local maxSpace = ship.maxCargoSpace
@@ -456,7 +478,8 @@ function updateData()
             end
         end
     end
-
+    playerTotalCargoBar:addEntry(playerShip.freeCargoSpace, 'Free space : '..math.ceil(playerShip.freeCargoSpace*10)/10, ColorRGB(0.1, 0.1, 0.1))
+    selfTotalCargoBar:addEntry(ship.freeCargoSpace, 'Free space : '..math.ceil(ship.freeCargoSpace*10)/10, ColorRGB(0.1, 0.1, 0.1))
     -- update fighters info
     playerTotalFightersBar:clear()
     selfTotalFightersBar:clear()
@@ -482,7 +505,7 @@ function updateData()
         end
         playerFighters[findex].pict.picture = fighter.weaponIcon
         playerFighters[findex].pict.color = fighter.rarity.color
-        playerFighters[findex].pict.tooltip = title
+        playerFighters[findex].tooltip = makeFTooltip( fighter )
         playerFighters[findex].pict.visible = true
         playerFighters[findex].button.visible = true
       end
@@ -527,7 +550,7 @@ function updateData()
         end
         selfFighters[findex].pict.picture = fighter.weaponIcon
         selfFighters[findex].pict.color = fighter.rarity.color
-        selfFighters[findex].pict.tooltip = title
+        selfFighters[findex].tooltip = makeFTooltip( fighter )
         selfFighters[findex].pict.visible = true
         selfFighters[findex].button.visible = true
       end
@@ -556,44 +579,60 @@ function updateData()
         selfFighters[findex].button.visible = false
       end
     end
-
+    playerTotalFightersBar:addEntry(playerHangar.freeSpace, "Free space : "..playerHangar.freeSpace, ColorRGB(0.1, 0.1, 0.1))
+    selfTotalFightersBar:addEntry(selfHangar.freeSpace, "Free space : "..selfHangar.freeSpace, ColorRGB(0.1, 0.1, 0.1))
 end
 
 function onPlayerTransferCrewPressed(button)
     -- transfer crew from player ship to self
-
     -- check which crew member type
     local crewmanIndex = crewmenByButton[button.index]
+
+
+
+
+
+
+
+
+
+
     if not crewmanIndex then return end
-
-
-    invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, false)
-end
-
-function onPlayerTransferCrewPressedx(button)
-    -- transfer crew from player ship to self
-
-    -- check which crew member type
-    local crewmanIndex = crewmenByButton[button.index]
-    if not crewmanIndex then return end
-
-
-    for i = 1, 10 do
+    if button.caption == '>' then
       invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, false)
+    else
+      for i = 1, 10 do
+        invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, false)
+      end
     end
 end
 
-function onSelfTransferCrewPressedx(button)
+function onSelfTransferCrewPressed(button)
     -- transfer crew from self ship to player ship
-
     -- check which crew member type
     local crewmanIndex = crewmenByButton[button.index]
-    if not crewmanIndex then return end
 
-    for i = 1, 10 do
+
+
+
+
+
+
+
+
+
+    if not crewmanIndex then return end
+    if button.caption == '<' then
       invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, true)
+    else
+      for i = 1, 10 do
+        invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, true)
+      end
     end
 end
+
+
+
 
 function transferCrew(crewmanIndex, otherIndex, selfToOther)
     local sender
@@ -647,48 +686,50 @@ end
 function onPlayerTransferCargoPressed(button)
     -- transfer cargo from player ship to self
 
+
+
+
+
+
+
+
+
+
     -- check which cargo
     local cargo = cargosByButton[button.index]
     if cargo == nil then return end
-
-    invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, false)
+    if button.caption == '>' then
+      invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, false)
+    else
+      for i = 1, 10 do
+        invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, false)
+      end
+    end
 end
 
 function onSelfTransferCargoPressed(button)
     -- transfer cargo from self to player ship
 
 
-    -- check which cargo
-    local cargo = cargosByButton[button.index]
-    if cargo == nil then return end
 
-    invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, true)
-end
 
-function onPlayerTransferCargoPressedx(button)
-    -- transfer cargo from player ship to self
+
+
+
+
+
 
     -- check which cargo
     local cargo = cargosByButton[button.index]
     if cargo == nil then return end
-
-    for i = 1, 10 do
-      invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, false)
-    end
-end
-
-function onSelfTransferCargoPressedx(button)
-    -- transfer cargo from self to player ship
-
-    -- check which cargo
-    local cargo = cargosByButton[button.index]
-    if cargo == nil then return end
-
-    for i = 1, 10 do
+    if button.caption == '<' then
       invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, true)
+    else
+      for i = 1, 10 do
+        invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, true)
+      end
     end
 end
-
 
 function transferCargo(cargoIndex, otherIndex, selfToOther)
     local sender
@@ -747,7 +788,6 @@ function onSelfTFighter(button)
 end
 
 function transferFighter(fighterIndex, otherIndex, selfToOther)
-    print(fighterIndex.s.."/"..fighterIndex.f)
     local sender
     local receiver
 
@@ -798,7 +838,74 @@ function transferFighter(fighterIndex, otherIndex, selfToOther)
     
     invokeClientFunction(Player(callingPlayer), "updateData")
 end
+--build tooltip for fighters
+function makeFTooltip(fighter)
+  	-- create tool tip
+	local tooltip = Tooltip()
+	-- title
+	local title = "${weaponPrefix} Fighter"%_t % fighter
+	local line = TooltipLine(20, 16)
+	line.ctext = title
+	line.ccolor = fighter.rarity.color
+	tooltip:addLine(line)
+  
+  --weapon and dps
+  local multis = fighter.simultaneousShooting and fighter.numWeapons > 1 and fighter.numWeapons or 1
+  local dps=math.floor(fighter.fireRate * multis * fighter.shotsPerFiring * fighter.damage)
+  local line = TooltipLine(15,12)
+  line.ltext = "DPS"%_t
+  line.rtext = dps
+  line.icon = fighter.weaponIcon
+  line.iconColor = ColorInt(0xa0a0a0)
+  tooltip:addLine(line)
 
+	-- durability
+	local line = TooltipLine(15, 12)
+	line.ltext = "Durability"%_t
+	line.rtext = round(fighter.durability)
+	line.icon = "data/textures/icons/health-normal.png";
+	line.iconColor = ColorInt(0xa0a0a0)
+	tooltip:addLine(line)
+
+	local line = TooltipLine(15, 12)
+	line.ltext = "Shield"%_t
+	line.rtext = fighter.shield > 0 and round(fighter.durability) or "None"
+	line.icon = "data/textures/icons/shield.png";
+	line.iconColor = ColorInt(0xa0a0a0)
+	tooltip:addLine(line)
+
+	tooltip:addLine(TooltipLine(15, 15))
+
+	-- size
+	local line = TooltipLine(15, 12)
+	line.ltext = "Size"%_t
+	line.rtext = math.floor(fighter.volume*10)/10 --what's the unit?
+	line.icon = "data/textures/icons/fighter.png";
+	line.iconColor = ColorInt(0xa0a0a0)
+	tooltip:addLine(line)
+
+	-- maneuverability
+	local line = TooltipLine(15, 12)
+	line.ltext = "Maneuverability"%_t
+	line.rtext = round(fighter.turningSpeed, 2) --what's the unit?
+	line.icon = "data/textures/icons/dodge.png";
+	line.iconColor = ColorInt(0xa0a0a0)
+	tooltip:addLine(line)
+
+	-- velocity
+	local line = TooltipLine(15, 12)
+	line.ltext = "Speed"%_t
+	line.rtext = round(fighter.maxVelocity * 10.0).."m/s" --lyr_nt
+	line.icon = "data/textures/icons/afterburn.png";
+	line.iconColor = ColorInt(0xa0a0a0)
+	tooltip:addLine(line)
+
+  return tooltip
+end
+--used to get the version installed on the server
+function btVersion()
+    return 1.11
+end
 ---- this function gets called every time the window is shown on the client, ie. when a player presses F
 function onShowWindow()
     updateData()
@@ -828,6 +935,18 @@ end
 --
 ---- this function will be executed every frame on the client only
 ---- use this for rendering additional elements to the interaction menu of the target craft
---function renderUI()
---end
-
+function renderUI()
+    local mouse = Mouse().position
+    if tabbedWindow:getActiveTab().index == fightersTab.index then
+      for _, fUI in pairs (playerFighters) do
+        if (fUI.pict.visible) then
+          local l = fUI.pict.lower
+          local u = fUI.pict.upper
+          if mouse.x >= l.x and mouse.x <= u.x and
+            mouse.y >= l.y and mouse.y <= u.y then
+            fUI.tooltip:drawMouseTooltip(Mouse().position)
+          end
+        end
+      end
+    end
+end
