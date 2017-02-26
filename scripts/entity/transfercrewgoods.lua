@@ -58,6 +58,8 @@ end
 
 -- create all required UI elements for the client side
 function initUI()
+    local maxcargo = 30
+
     local res = getResolution();
     local size = vec2(700, 600)
 
@@ -157,13 +159,14 @@ function initUI()
     selfTotalCargoBar = rightFrame:createNumbersBar(Rect())
     rightLister:placeElementCenter(selfTotalCargoBar)
 
-    for i = 1, 30 do
+    for i = 1, maxcargo do
         local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 25))
         local vsplit = UIVerticalSplitter(rect, 7, 0, 0.80)
         local vsplit1 = UIVerticalSplitter(vsplit.left, 3, 0, 0.15)
         local vsplit2 = UIVerticalSplitter(vsplit.right, 3, 0, 0.5)
 
         local pbutton = leftFrame:createButton(vsplit2.right, ">", "onPlayerTransferCargoPressed")
+
         local pTextBox = leftFrame:createTextBox(vsplit2.left, "onNumberfieldEntered")
         pTextBox.text = "1"
         pTextBox.allowedCharacters = "0123456789"
@@ -585,11 +588,12 @@ function onPlayerTransferCrewPressed(button)
     else
         amount = tonumber(amount)
         if amount >MAXTRANSFER then
-            playerCrewNumberFields[crewmanIndex].text = tostring(MAXTRANSFER)
+            playerCrewUI[crewmanIndex].pTextBox.text = tostring(MAXTRANSFER)
             amount = MAXTRANSFER
         end
     end
     if not crewmanIndex then return end
+
     if amount==1 then
       invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, false)
     else
@@ -603,17 +607,18 @@ function onSelfTransferCrewPressed(button)
     -- transfer crew from self ship to player ship
     -- check which crew member type
     local crewmanIndex = crewmenByButton[button.index]
-    local amount = selfCrewNumberFields[crewmanIndex].text
+    local amount = selfCrewUI[crewmanIndex].sTextBox.text
     if amount == "" then
         amount = 0
     else
         amount = tonumber(amount)
         if amount >MAXTRANSFER then
-            selfCrewNumberFields[crewmanIndex].text = tostring(MAXTRANSFER)
+            selfCrewUI[crewmanIndex].sTextBox.text = tostring(MAXTRANSFER)
             amount = MAXTRANSFER
         end
     end
     if not crewmanIndex then return end
+
     if amount==1 then
       invokeServerFunction("transferCrew", crewmanIndex, Player().craftIndex, true)
     else
@@ -677,19 +682,20 @@ end
 
 function onPlayerTransferCargoPressed(button)
     -- transfer cargo from player ship to self
-    local amount = playerCargoNumberFields[cargo].text
+    -- check which cargo
+    local cargo = cargosByButton[button.index]
+    local amount = playerCargoUI[cargo].pTextBox.text
     if amount == "" then
         amount = 0
     else
         amount = tonumber(amount)
         if amount >MAXTRANSFER then
-            playerCargoNumberFields[cargo].text = tostring(MAXTRANSFER)
+            playerCargoUI[cargo].pTextBox.text = tostring(MAXTRANSFER)
             amount = MAXTRANSFER
         end
     end
-    -- check which cargo
-    local cargo = cargosByButton[button.index]
     if cargo == nil then return end
+
     if amount==1 then
       invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, false)
     else
@@ -701,19 +707,20 @@ end
 
 function onSelfTransferCargoPressed(button)
     -- transfer cargo from self to player ship
-    local amount = selfCargoNumberFields[cargo].text
+    -- check which cargo
+    local cargo = cargosByButton[button.index]
+    local amount = selfCargoUI[cargo].sTextBox.text
     if amount == "" then
         amount = 0
     else
         amount = tonumber(amount)
         if amount >MAXTRANSFER then
-            selfCargoNumberFields[cargo].text = tostring(MAXTRANSFER)
+            selfCargoUI[cargo].sTextBox.text = tostring(MAXTRANSFER)
             amount = MAXTRANSFER
         end
     end
-    -- check which cargo
-    local cargo = cargosByButton[button.index]
     if cargo == nil then return end
+
     if amount==1 then
       invokeServerFunction("transferCargo", cargo - 1, Player().craftIndex, true)
     else
