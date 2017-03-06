@@ -205,67 +205,51 @@ function initUI()
     end
 
     fightersTab = tabbedWindow:createTab("Fighters"%_t, "data/textures/icons/fighter.png", "Exchange fighters"%_t)
-
-    local leftLister = UIVerticalLister(vSplit.left, 10, 10)
-    local rightLister = UIVerticalLister(vSplit.left, 10, 10)
-
-    leftLister.marginRight = 30
-    rightLister.marginRight = 30
-
-    local leftFrame = fightersTab:createScrollFrame(vSplit.left)
-    local rightFrame = fightersTab:createScrollFrame(vSplit.right)
     
-    playerTotalFightersBar = leftFrame:createNumbersBar(Rect())
+    vSplit = UIVerticalSplitter(Rect(fightersTab.size), 5, 0, 0.5)
+
+    local leftLister = UIVerticalLister(vSplit.left, 5, 5)
+    local rightLister = UIVerticalLister(vSplit.right, 5, 5)
+
+    leftLister.marginRight = 5
+    rightLister.marginRight = 5
+
+--    local leftFrame = fightersTab:createScrollFrame(vSplit.left)
+--    local rightFrame = fightersTab:createScrollFrame(vSplit.right)
+    
+    playerTotalFightersBar = fightersTab:createNumbersBar(Rect())
     leftLister:placeElementCenter(playerTotalFightersBar)
 
-    selfTotalFightersBar = rightFrame:createNumbersBar(Rect())
+    selfTotalFightersBar = fightersTab:createNumbersBar(Rect())
     rightLister:placeElementCenter(selfTotalFightersBar)
     
-    for i = 1, 6 do
-      local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 125))
-      local hsplit = UIHorizontalSplitter(rect, 5, 0, 0.2)
-      local hsplit2 = UIHorizontalSplitter(hsplit.bottom, 0, 0, 0.5)
-      local label = leftFrame:createLabel(vec2(hsplit.top.lower.x+2,hsplit.top.lower.y+4), "Squad "..i, 12)
-      local vsplit = UIVerticalMultiSplitter(hsplit2.top, 2, 0, 5)
-      local vsplit2 = UIVerticalMultiSplitter(hsplit2.bottom, 2, 0, 5)
-      for j = 0, 5 do
-        local pic1=leftFrame:createPicture(vsplit:partition(j),"data/textures/icons/fighter.png")
-        local button=leftFrame:createButton(vsplit:partition(j),'',"onPlayerTFighter")
+    for i = 1, 7 do
+      local rect = leftLister:placeCenter(vec2(leftLister.inner.width, 50))
+      local hsplit = UIHorizontalSplitter(rect, 5, 0, 0.4)
+      local label = fightersTab:createLabel(vec2(hsplit.top.lower.x+2,hsplit.top.lower.y+4), "Squad "..i, 12)
+      local vsplit = UIVerticalMultiSplitter(hsplit.bottom, 2, 0, 11)
+      for j = 0, 11 do
+        local pic1 = fightersTab:createPicture(vsplit:partition(j),"data/textures/icons/fighter.png")
+        local button = fightersTab:createButton(vsplit:partition(j),'',"onPlayerTFighter")
         pic1.flipped = true -- else the icon is upside down
         pic1.isIcon = true
-        local pic2=leftFrame:createPicture(vsplit2:partition(j),"data/textures/icons/fighter.png")
-        local button2=leftFrame:createButton(vsplit2:partition(j),'',"onPlayerTFighter")
-        pic2.flipped = true -- else the icon is upside down
-        pic2.isIcon = true
         fightersByButton[button.index]={s=i-1, f=j}
-        fightersByButton[button2.index]={s=i-1, f=j+6}
         local toolt1
-        local toolt2
         table.insert(playerFighters, { pict=pic1, button=button, tooltip=toolt1})
-        table.insert(playerFighters, { pict=pic2, button=button2, tooltip=toolt2})
       end
 
-      local rect = rightLister:placeCenter(vec2(rightLister.inner.width,125))
-      local hsplit = UIHorizontalSplitter(rect, 5, 0, 0.2)
-      local hsplit2 = UIHorizontalSplitter(hsplit.bottom, 0, 0, 0.5)
-      local label = rightFrame:createLabel(vec2(hsplit.top.lower.x+2,hsplit.top.lower.y+4), "Squad "..i, 12)
-      local vsplit = UIVerticalMultiSplitter(hsplit2.top, 2, 0, 5)
-      local vsplit2 = UIVerticalMultiSplitter(hsplit2.bottom, 2, 0, 5)
-      for j = 0, 5 do
-        local pic1=rightFrame:createPicture(vsplit:partition(j),"data/textures/icons/fighter.png")
-        local button=rightFrame:createButton(vsplit:partition(j),'',"onSelfTFighter")
+      local rect = rightLister:placeCenter(vec2(rightLister.inner.width,50))
+      local hsplit = UIHorizontalSplitter(rect, 5, 0, 0.4)
+      local label = fightersTab:createLabel(vec2(hsplit.top.lower.x+2,hsplit.top.lower.y+4), "Squad "..i, 12)
+      local vsplit = UIVerticalMultiSplitter(hsplit.bottom, 2, 0, 11)
+      for j = 0, 11 do
+        local pic1 = fightersTab:createPicture(vsplit:partition(j),"data/textures/icons/fighter.png")
+        local button = fightersTab:createButton(vsplit:partition(j),'',"onSelfTFighter")
         pic1.flipped = true -- else the icon is upside down
         pic1.isIcon = true
-        local pic2=rightFrame:createPicture(vsplit2:partition(j),"data/textures/icons/fighter.png")
-        local button2=rightFrame:createButton(vsplit2:partition(j),'',"onSelfTFighter")
-        pic2.flipped = true -- else the icon is upside down
-        pic2.isIcon = true
         fightersByButton[button.index]={s=i-1, f=j}
-        fightersByButton[button2.index]={s=i-1, f=j+6}
         local toolt1
-        local toolt2
         table.insert(selfFighters, { pict=pic1, button=button, tooltip=toolt1})
-        table.insert(selfFighters, { pict=pic2, button=button2, tooltip=toolt2 })
       end
     end
 end
@@ -426,17 +410,34 @@ function updateData()
                 end
             end
             local good, amount = playerShip:getCargo(i - 1)
+            local regular = ''
+            local color = 0xffa0a0a0
+            if good.stolen then
+              regular = " (stolen)"
+              color = 0xffff0000
+            elseif good.illegal then
+              regular = " (illegal)"
+              color = 0xffff0000
+            elseif good.dangerous then
+              regular = " (dangerous)"
+              color = 0xffee8800
+            elseif good.suspicious then
+              regular = " (suspicious)"
+              color = 0xffeeee00
+            end
             local maxSpace = playerShip.maxCargoSpace
             bar:setRange(0, maxSpace)
             bar.value = amount * good.size
+            bar.color = ColorInt(color)
             icon.picture = good.icon
+            icon.color = ColorInt(color)
 
             if amount > 1 then
-                bar.name = amount .. " " .. good.plural
-                playerTotalCargoBar:addEntry(amount * good.size, amount .. " " .. good.plural, ColorInt(0xffa0a0a0))
+                bar.name = amount .. " " .. good.plural .. regular
+                playerTotalCargoBar:addEntry(amount * good.size, amount .. " " .. good.plural .. regular, ColorInt(color))
             else
-                bar.name = amount .. " " .. good.name
-                playerTotalCargoBar:addEntry(amount * good.size, amount .. " " .. good.name, ColorInt(0xffa0a0a0))
+                bar.name = amount .. " " .. good.name .. regular
+                playerTotalCargoBar:addEntry(amount * good.size, amount .. " " .. good.name .. regular, ColorInt(color))
             end
         end
 
@@ -459,17 +460,34 @@ function updateData()
             end
 
             local good, amount = ship:getCargo(i - 1)
+            local regular = ''
+            local color = 0xffa0a0a0
+            if good.stolen then
+              regular = " (stolen)"
+              color = 0xffff0000
+            elseif good.illegal then
+              regular = " (illegal)"
+              color = 0xffff0000
+            elseif good.dangerous then
+              regular = " (dangerous)"
+              color = 0xffee8800
+            elseif good.suspicious then
+              regular = " (suspicious)"
+              color = 0xffeeee00
+            end
             local maxSpace = ship.maxCargoSpace
             bar:setRange(0, maxSpace)
             bar.value = amount * good.size
+            bar.color = ColorInt(color)
             icon.picture = good.icon
+            icon.color = ColorInt(color)
 
             if amount > 1 then
-                bar.name = amount .. " " .. good.plural
-                selfTotalCargoBar:addEntry(amount * good.size, amount .. " " .. good.plural, ColorInt(0xffa0a0a0))
+                bar.name = amount .. " " .. good.plural .. regular
+                selfTotalCargoBar:addEntry(amount * good.size, amount .. " " .. good.plural .. regular, ColorInt(color))
             else
-                bar.name = amount .. " " .. good.name
-                selfTotalCargoBar:addEntry(amount * good.size, amount .. " " .. good.name, ColorInt(0xffa0a0a0))
+                bar.name = amount .. " " .. good.name .. regular
+                selfTotalCargoBar:addEntry(amount * good.size, amount .. " " .. good.name .. regular, ColorInt(color))
             end
         end
     end
@@ -493,11 +511,8 @@ function updateData()
         local title = "${weaponPrefix} Fighter"%_t % fighter
         playerTotalFightersBar:addEntry(fighter.volume,title,fighter.rarity.color)
         local findex
-        if(j<6)then --calculate where are the corresponding UI objects
-          findex = squad*12+j*2+1
-        else
-          findex = squad*12+j*2-10
-        end
+        --calculate where are the corresponding UI objects
+        findex = squad*12+j+1
         playerFighters[findex].pict.picture = fighter.weaponIcon
         playerFighters[findex].pict.color = fighter.rarity.color
         playerFighters[findex].tooltip = makeFTooltip( fighter )
@@ -507,24 +522,16 @@ function updateData()
       local squadmaxf=playerHangar:getSquadMaxFighters(squad)
       for j=squadmax, squadmaxf-1 do -- hiding unused slots in squad
         local findex
-        if(j<6)then
-          findex = squad*12+j*2+1
-        else
-          findex = squad*12+j*2-10
-        end
+        findex = squad*12+j+1
         playerFighters[findex].pict.visible = false
         playerFighters[findex].button.visible = false
       end
       if squad > lsquad then lsquad = squad end
     end
-    for i=lsquad+1, 5 do -- make invisible the missing squads
+    for i=lsquad+1, 6 do -- make invisible the missing squads
       for j=0, 11 do
         local findex
-        if(j<6)then
-          findex = i*12+j*2+1
-        else
-          findex = i*12+j*2-10
-        end
+        findex = i*12+j+1
         playerFighters[findex].pict.visible = false
         playerFighters[findex].button.visible = false
       end
@@ -538,11 +545,7 @@ function updateData()
         local title = "${weaponPrefix} Fighter"%_t % fighter
         selfTotalFightersBar:addEntry(fighter.volume,title,fighter.rarity.color)
         local findex
-        if(j<6)then --calculate where are the corresponding UI objects
-          findex = squad*12+j*2+1
-        else
-          findex = squad*12+j*2-10
-        end
+        findex = squad*12+j+1
         selfFighters[findex].pict.picture = fighter.weaponIcon
         selfFighters[findex].pict.color = fighter.rarity.color
         selfFighters[findex].tooltip = makeFTooltip( fighter )
@@ -552,30 +555,22 @@ function updateData()
       local squadmaxf=selfHangar:getSquadMaxFighters(squad)
       for j=squadmax, squadmaxf-1 do -- hiding unused slots in squad
         local findex
-        if(j<6)then
-          findex = squad*12+j*2+1
-        else
-          findex = squad*12+j*2-10
-        end
+        findex = squad*12+j+1
         selfFighters[findex].pict.visible = false
         selfFighters[findex].button.visible = false
       end
       if squad > lsquad then lsquad = squad end
     end
-    for i=lsquad+1, 5 do -- make invisible the missing squads
+    for i=lsquad+1, 6 do -- make invisible the missing squads
       for j=0, 11 do
         local findex
-        if(j<6)then
-          findex = i*12+j*2+1
-        else
-          findex = i*12+j*2-10
-        end
+        findex = i*12+j+1
         selfFighters[findex].pict.visible = false
         selfFighters[findex].button.visible = false
       end
     end
-    playerTotalFightersBar:addEntry(playerHangar.freeSpace, "Free space : "..playerHangar.freeSpace, ColorRGB(0.1, 0.1, 0.1))
-    selfTotalFightersBar:addEntry(selfHangar.freeSpace, "Free space : "..selfHangar.freeSpace, ColorRGB(0.1, 0.1, 0.1))
+    playerTotalFightersBar:addEntry(playerHangar.freeSpace, "Free space : ".. math.ceil(playerHangar.freeSpace*10)/10, ColorRGB(0.1, 0.1, 0.1))
+    selfTotalFightersBar:addEntry(selfHangar.freeSpace, "Free space : ".. math.ceil(selfHangar.freeSpace*10)/10, ColorRGB(0.1, 0.1, 0.1))
 end
 
 function onPlayerTransferCrewPressed(button)
